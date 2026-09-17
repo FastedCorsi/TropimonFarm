@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "tropimon_farm",
+  "version": "${version}",
+  "name": "Tropimon Farm",
+  "description": "By FastedCorsi — Farm autonome pour Tropimon.",
+  "authors": [
+    "By FastedCorsi"
+  ],
+  "contact": {
+    "sources": "https://github.com/FastedCorsi/TropimonFarm"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "mixins": ["tropimon_farm.mixins.json"],
+  "entrypoints": {
+    "client": [
+      "fr.tropimon.farm.FarmClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "cobblemon": ">=1.8.0"
+  }
+}

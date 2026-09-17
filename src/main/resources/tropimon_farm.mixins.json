@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "fr.tropimon.farm.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["RegionMixin"],
+  "injectors": {"defaultRequire": 1}
+}

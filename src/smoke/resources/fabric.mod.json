@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "farm_smoke",
+  "version": "1.0.0",
+  "authors": [
+    "By FastedCorsi"
+  ],
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "fr.tropimon.farm.SmokeClient"
+    ]
+  },
+  "depends": {
+    "tropimon_farm": "*"
+  }
+}
