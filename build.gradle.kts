@@ -28,6 +28,7 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
 }
 java { withSourcesJar() }
 tasks.withType<JavaCompile>().configureEach { options.encoding = "UTF-8"; options.release.set(21) }

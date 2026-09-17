@@ -1,5 +1,11 @@
 # Confidentialité permanente des mods Tropimon
 
+## Périmètre permanent de Tropimon Farm
+
+- Tropimon Farm reste uniquement client. Aucun composant serveur requis, accès au serveur intégré pour enrichir l'interface ou requête automatique de données réservées à l'éditeur.
+- Distinguer les données synchronisées, les catalogues locaux et les hypothèses de cycle. Ne jamais présenter une phase supposée ou un Pokémon possible comme une observation confirmée du serveur.
+- Les accès serveur du diagnostic restent dans le source set de test, exclu des JAR livrés.
+
 Cette règle demandée par l'utilisateur s'applique à toute création, correction, optimisation, compilation et livraison des mods Tropimon de ce dépôt, y compris leurs futurs modules.
 
 ## Attribution et données du développeur

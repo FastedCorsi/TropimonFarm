@@ -4,7 +4,8 @@ param(
     [string]$CobblemonJar,
     [ValidateRange(960, 3840)][int]$Width = 1400,
     [ValidateRange(600, 2160)][int]$Height = 900,
-    [ValidateSet('fr_fr', 'en_us')][string]$Language = 'fr_fr'
+    [ValidateSet('fr_fr', 'en_us')][string]$Language = 'fr_fr',
+    [switch]$HabitatAudit
 )
 # Import the engine's built-in modules explicitly, including when launched by a build daemon.
 Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
@@ -14,6 +15,7 @@ $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 if (!$LauncherDirectory) { $LauncherDirectory = Join-Path $env:APPDATA '.tropimon' }
 $launcher = $LauncherDirectory
 $run = Join-Path $project "build/verify-$Mode"
+if ($HabitatAudit) { $run = Join-Path $project 'build/verify-habitat-audit' }
 if (Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" |
         Where-Object { $_.CommandLine -and $_.CommandLine.Contains($run) }) {
     throw 'Close this isolated test instance before replacing its test JAR.'
@@ -71,7 +73,11 @@ $arguments = @('-Xmx3G', '-Dtropimon.smoke=true', '-Dfabric.debug.disableErrorGu
     '--accessToken', '0', '--version', '1.21.1', '--userType', 'legacy',
     '--gameDir', $run, '--assetsDir', (Join-Path $launcher 'assets'),
     '--assetIndex', $version.assetIndex.id, '--width', $Width.ToString(), '--height', $Height.ToString())
+if ($HabitatAudit) { $arguments = @('-Dtropimon.habitatAudit=true') + $arguments }
 Push-Location $run
 try { & $java @arguments } finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 if (-not (Select-String -LiteralPath (Join-Path $run "logs/latest.log") -SimpleMatch "TROPIMON_SMOKE_OK" -Quiet)) { throw "Verification incompletement validee : consulter le journal local." }
+if ($HabitatAudit -and -not (Select-String -LiteralPath (Join-Path $run 'logs/latest.log') -SimpleMatch 'HABITAT_AUDIT COMPLETE' -Quiet)) {
+    throw 'Habitat audit incomplete: inspect the isolated log.'
+}

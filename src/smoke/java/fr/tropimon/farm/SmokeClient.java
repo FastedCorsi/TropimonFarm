@@ -20,6 +20,7 @@ public final class SmokeClient implements ClientModInitializer {
   long start;
   net.minecraft.client.gui.screen.Screen screen;
   BlockPos habitatPos;
+  HabitatPhaseAudit audit;
 
   @Override
   public void onInitializeClient() {
@@ -34,6 +35,15 @@ public final class SmokeClient implements ClientModInitializer {
             if (client.getOverlay() != null || ++ticks < 40) return;
             switch (stage) {
               case -1 -> {
+                if (Boolean.getBoolean("tropimon.habitatAudit"))
+                  require(
+                      client
+                          .runDirectory
+                          .toPath()
+                          .toAbsolutePath()
+                          .normalize()
+                          .endsWith(Path.of("build", "verify-habitat-audit")),
+                      "audit isolated directory enforced");
                 stage = 0;
                 ticks = 0;
                 client.options.getViewDistance().setValue(2);
@@ -107,6 +117,35 @@ public final class SmokeClient implements ClientModInitializer {
                 require(
                     HabitatMonitor.INSTANCE.entries(client).stream().anyMatch(e -> e.pinned()),
                     "habitat pinned");
+                screen = new HabitatCycleScreen(habitatPos);
+                client.setScreen(screen);
+                stage = 20;
+                ticks = 0;
+              }
+              case 20 -> {
+                if ((boolean) field(screen, "loading")) return;
+                require(!((List<?>) field(screen, "pools")).isEmpty(), "cycle pools loaded");
+                require(
+                    (int) field(screen, "estimate") == 0,
+                    "no estimate without explicit assumptions");
+                // The synthetic display list need not match a catalogue pool: select all
+                // explicitly.
+                var cycle = (HabitatCycleScreen) screen;
+                screen.mouseClicked(
+                    cycle.left + 30 * cycle.scale, cycle.top + 120 * cycle.scale, 0);
+                screen.mouseClicked(
+                    cycle.left + 300 * cycle.scale, cycle.top + 64 * cycle.scale, 0);
+                require(HabitatClock.age() >= 0, "ordinary time packet observed on client");
+                require(
+                    (int) field(screen, "estimate") > 0,
+                    "explicit hypothesis uses received world age");
+                stage = 21;
+                ticks = 0;
+              }
+              case 21 -> {
+                shot(client, "farm-cycles");
+                HabitatClock.reset();
+                require(HabitatClock.age() == -1, "clock reset clears prior session age");
                 screen = new FarmScreen();
                 client.setScreen(screen);
                 stage = 3;
@@ -137,7 +176,16 @@ public final class SmokeClient implements ClientModInitializer {
                                     && !e.present()
                                     && e.pinned()),
                     "removed habitat never remains live");
-                done(client);
+                if (Boolean.getBoolean("tropimon.habitatAudit")) {
+                  client.setScreen(null);
+                  audit = new HabitatPhaseAudit(habitatPos);
+                  stage = 5;
+                  ticks = 0;
+                } else done(client);
+              }
+              case 5 -> {
+                if (audit.step(client)) done(client);
+                ticks = 0;
               }
             }
           } catch (Throwable ex) {

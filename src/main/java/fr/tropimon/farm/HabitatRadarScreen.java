@@ -69,6 +69,11 @@ public final class HabitatRadarScreen extends InstrumentScreen {
                 ? "Bloc absent : habitat retiré ou remplacé"
                 : "Hors chargement : dernière observation seulement");
     if (!chosen.mimic().isBlank()) paragraph("Apparence : " + chosen.mimic());
+    if (chosen.present()) {
+      paragraph("Style reçu : " + (chosen.activated() ? "activé" : "naturel"));
+      paragraph(
+          "Spawns ordinaires annulés/remplacés : " + (chosen.cancelsSpawns() ? "oui" : "non"));
+    }
     paragraph("Espèces d'affichage reçues (pas le pool complet) :");
     if (chosen.species().isEmpty()) paragraph("Aucune espèce transmise.");
     for (String id : chosen.species()) {
@@ -77,7 +82,7 @@ public final class HabitatRadarScreen extends InstrumentScreen {
     }
     paragraph("Phase active : non transmise");
     paragraph("Délai du prochain spawn : non transmis");
-    paragraph("Pas de prédiction ni d'interaction automatique avec le bloc.");
+    paragraph("Cycles et Pokémon possibles : voir la fiche, selon le profil choisi.");
     detailOffset = Math.clamp(detailOffset, 0, Math.max(0, details.size() - 8));
   }
 
@@ -170,8 +175,8 @@ public final class HabitatRadarScreen extends InstrumentScreen {
       for (int i = 0; i < 8 && detailOffset + i < details.size(); i++)
         label(c, details.get(detailOffset + i), 285, 119 + i * 13, WHITE);
       label(c, "Molette : détails / liste", 285, 235, MUTED);
-      label(c, "Repères locaux, séparés par monde", 285, 267, MUTED);
-      label(c, "et dimension · 64 maximum", 285, 281, MUTED);
+      chip(c, "Cycles / Pokémon possibles", 284, 257, 252, false, ACCENT);
+      label(c, "Correspondance à vérifier · client seul", 285, 285, MUTED);
     }
     end(c);
   }
@@ -181,6 +186,10 @@ public final class HabitatRadarScreen extends InstrumentScreen {
     int mx = localX(x), my = localY(y);
     if (hit(mx, my, 353, 16, 187, 21)) {
       client.setScreen(new FarmScreen());
+      return true;
+    }
+    if (hit(mx, my, 284, 257, 252, 21) && chosen() != null) {
+      client.setScreen(new HabitatCycleScreen(chosen().pos()));
       return true;
     }
     if (hit(mx, my, 22, 244, 241, 56)) {

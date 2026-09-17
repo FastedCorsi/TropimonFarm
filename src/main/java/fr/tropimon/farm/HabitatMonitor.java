@@ -25,7 +25,9 @@ public final class HabitatMonitor {
       boolean loaded,
       boolean present,
       long observed,
-      boolean pinned) {}
+      boolean pinned,
+      boolean activated,
+      boolean cancelsSpawns) {}
 
   private final Map<BlockPos, Observation> observations = new HashMap<>();
   private final Set<BlockPos> pins = new HashSet<>();
@@ -33,6 +35,12 @@ public final class HabitatMonitor {
   private Path pinFile;
   private int ticks;
   private long revision;
+  private long scopeRevision;
+
+  long scopeRevision() {
+    return scopeRevision;
+  }
+
   private String region = "";
 
   List<Observation> entries(MinecraftClient client) {
@@ -47,6 +55,8 @@ public final class HabitatMonitor {
   }
 
   private void clearWorld() {
+    scopeRevision++;
+    HabitatClock.reset();
     world = null;
     pinFile = null;
     pins.clear();
@@ -80,7 +90,9 @@ public final class HabitatMonitor {
     }
     if (++ticks >= 40) {
       ticks = 0;
-      if (!pins.isEmpty() || client.currentScreen instanceof HabitatRadarScreen) scan(client);
+      if (!pins.isEmpty()
+          || client.currentScreen instanceof HabitatRadarScreen
+          || client.currentScreen instanceof HabitatCycleScreen) scan(client);
     }
   }
 
@@ -131,7 +143,9 @@ public final class HabitatMonitor {
               chunk != null,
               false,
               old == null ? 0 : old.observed(),
-              true));
+              true,
+              false,
+              false));
     }
     observations.clear();
     observations.putAll(next);
@@ -146,7 +160,23 @@ public final class HabitatMonitor {
     dest.put(
         pos,
         new Observation(
-            pos, block.getMimicId().toString(), species, true, true, now, pins.contains(pos)));
+            pos,
+            block.getMimicId().toString(),
+            species,
+            true,
+            true,
+            now,
+            pins.contains(pos),
+            block
+                .getCachedState()
+                .get(
+                    com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion
+                        .getACTIVATED_STYLE()),
+            block
+                .getCachedState()
+                .get(
+                    com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion
+                        .getCANCELS_REGULAR_SPAWNS())));
   }
 
   boolean toggle(BlockPos pos) {

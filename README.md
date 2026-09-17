@@ -1,6 +1,6 @@
 # Tropimon Farm
 
-By FastedCorsi — 0.1.0
+By FastedCorsi — 0.2.0
 
 **F8** : radar des nouveaux blocs d'habitat (touche reconfigurable).
 
@@ -16,6 +16,12 @@ By FastedCorsi — 0.1.0
 Dans Cobblemon 1.8.0/1.8.1, les paquets ordinaires de ces blocs ne transmettent **ni phase active ni délai de spawn**. Les getters locaux correspondants contiennent des valeurs par défaut : ils ne sont pas utilisés. Les espèces d'affichage ne sont pas présentées comme la liste complète des apparitions.
 
 ## Catalogue et conditions
+
+Depuis un bloc sélectionné dans le radar, **Cycles / Pokémon possibles** affiche les habitats candidats d'après les espèces reçues, puis les Pokémon et conditions de chaque phase. Le style activé/naturel et l'annulation des apparitions ordinaires proviennent de l'état de bloc synchronisé.
+
+Le mod reste **uniquement client**. Choisir explicitement un candidat et un ordre (`SIMPLE`, `FIXED_RANDOM`, `FULL_RANDOM`) permet une estimation utilisant l'âge du monde reçu dans les paquets ordinaires et la position du bloc. Les tranches durent 24 000 ticks de simulation : le délai affiché n'est pas une durée garantie en secondes. L'heure solaire, le sommeil et l'horloge de la machine ne servent pas au calcul. Une horloge absente depuis dix secondes, un bloc non observé ou un changement de session/région invalide l'estimation.
+
+Les réglages du serveur ne sont pas confirmés par ce choix. Les ressources installées et l'instantané Tropimon peuvent différer de ses datapacks. Le générateur des phases est reproductible avec ces entrées ; la sélection effective du Pokémon emploie un autre état aléatoire côté serveur. L'écran affiche donc les Pokémon **possibles selon le catalogue choisi**, pas une prochaine apparition certaine. L'analyse détaillée est dans [l'audit](docs/HABITAT-PHASE-AUDIT.md).
 
 Le bouton Catalogue ouvre les habitats et apparitions : recherche, rareté, niveaux, poids relatif, phases et conditions disponibles. Le poids n'est jamais transformé en pourcentage de chance.
 
@@ -41,7 +47,7 @@ Le build local exige un unique JAR Cobblemon actif. `TROPIMON_HOME` permet de ch
 
 ## Distribution
 
-Deux exemplaires identiques sont produits dans `build/release/0.1.0/local` et `build/release/0.1.0/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
+Deux exemplaires identiques sont produits dans `build/release/0.2.0/local` et `build/release/0.2.0/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
 
 L'auto-update est autonome : uniquement la Release du dépôt de ce mod, SHA-256, identifiant et version exacts, préparation hors des mods, remplacement différé après arrêt du jeu sous Windows. Vérification asynchrone au démarrage, espacée d'au moins six heures entre les sessions. Désactivation locale possible dans le fichier `config/<mod_id>-updater.json`.
 

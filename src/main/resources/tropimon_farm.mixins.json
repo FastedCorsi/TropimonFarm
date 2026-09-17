@@ -2,6 +2,6 @@
   "required": true,
   "package": "fr.tropimon.farm.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["RegionMixin"],
+  "client": ["RegionMixin", "WorldTimeMixin"],
   "injectors": {"defaultRequire": 1}
 }
