@@ -30,7 +30,7 @@ public final class HabitatBlocksScreen extends InstrumentScreen {
 
   HabitatBlocksScreen(
       Screen parent, BlockPos pos, List<FarmCatalog.Entry> entries, String provenance) {
-    super("Tropimon Farm · blocs et zone");
+    super("Tropimon Better Farm · blocs et zone");
     this.parent = parent;
     this.pos = pos;
     this.provenance = provenance;

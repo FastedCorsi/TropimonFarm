@@ -14,7 +14,7 @@ Import-Module (Join-Path $PSHOME 'Modules/CimCmdlets/CimCmdlets.psd1') -ErrorAct
 $ErrorActionPreference = 'Stop'
 $heldLocks = @()
 $modId = 'tropimon_farm'
-$filePrefix = 'TropimonFarm'
+$filePrefix = 'TropimonBetterFarm'
 $deliveryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $statusFile = Join-Path $deliveryRoot 'install-status.json'
 Add-Type -AssemblyName System.IO.Compression.FileSystem

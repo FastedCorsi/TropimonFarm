@@ -84,6 +84,10 @@ public final class SmokeClient implements ClientModInitializer {
                               com.cobblemon.mod.common.CobblemonBlocks.HABITAT_BLOCK
                                   .getDefaultState();
                           world.setBlockState(habitatPos, state, 3);
+                          world.setBlockState(
+                              habitatPos.add(-2, 0, 0),
+                              net.minecraft.block.Blocks.MOSS_BLOCK.getDefaultState(),
+                              3);
                           var block =
                               (com.cobblemon.mod.common.block.habitat.HabitatBlockEntity)
                                   world.getBlockEntity(habitatPos);
@@ -100,14 +104,46 @@ public final class SmokeClient implements ClientModInitializer {
                 ticks = 0;
               }
               case 1 -> {
-                HabitatMonitor.INSTANCE.scan(client);
                 var entries = HabitatMonitor.INSTANCE.entries(client);
                 if (entries.stream().noneMatch(e -> e.pos().equals(habitatPos))) return;
+                require(client.currentScreen == null, "automatic detection with no interface open");
+                require(
+                    entries.stream().noneMatch(e -> e.pinned()),
+                    "automatic detection needs no bookmark");
                 require(
                     entries.stream().anyMatch(e -> e.pos().equals(habitatPos) && e.present()),
                     "actual synchronized habitat detected");
+                lookAt(client, habitatPos);
+                stage = 30;
+                ticks = 0;
+              }
+              case 30 -> {
+                var target = HabitatMonitor.INSTANCE.targeted(client);
+                require(
+                    target != null && target.pos().equals(habitatPos),
+                    "actual crosshair selects habitat in game");
+                require(
+                    target.species().size() == 2 && target.mimic().equals("minecraft:moss_block"),
+                    "target card uses that block's received information");
+                shot(client, "better-farm-ingame");
+                lookAt(client, habitatPos.add(-2, 0, 0));
+                stage = 31;
+                ticks = 0;
+              }
+              case 31 -> {
+                require(
+                    client.crosshairTarget instanceof net.minecraft.util.hit.BlockHitResult hit
+                        && hit.getBlockPos().equals(habitatPos.add(-2, 0, 0)),
+                    "crosshair actually hits ordinary matching decor");
+                require(
+                    HabitatMonitor.INSTANCE.targeted(client) == null,
+                    "ordinary matching decor does not identify an habitat");
+                require(
+                    HabitatMonitor.INSTANCE.entries(client).stream()
+                        .noneMatch(e -> e.pos().equals(habitatPos.add(-2, 0, 0))),
+                    "ordinary decor has no marker");
                 HabitatMonitor.INSTANCE.toggle(habitatPos);
-                screen = new HabitatRadarScreen();
+                screen = new HabitatRadarScreen(habitatPos);
                 client.setScreen(screen);
                 stage = 2;
                 ticks = 0;
@@ -272,6 +308,17 @@ public final class SmokeClient implements ClientModInitializer {
     var f = instance.getClass().getDeclaredField(name);
     f.setAccessible(true);
     return f.get(instance);
+  }
+
+  static void lookAt(MinecraftClient client, BlockPos pos) {
+    var direction = net.minecraft.util.math.Vec3d.ofCenter(pos).subtract(client.player.getEyePos());
+    client.player.setYaw((float) (Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90));
+    client.player.setPitch(
+        (float)
+            -Math.toDegrees(
+                Math.atan2(
+                    direction.y,
+                    Math.sqrt(direction.x * direction.x + direction.z * direction.z))));
   }
 
   static void require(boolean condition, String message) {

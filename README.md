@@ -1,8 +1,8 @@
-# Tropimon Farm
+# Tropimon Better Farm
 
-By FastedCorsi — 0.2.1
+By FastedCorsi — 0.3.0
 
-**F8** : radar des nouveaux blocs d'habitat (touche reconfigurable).
+La détection fonctionne **directement en jeu**, sans écran ouvert ni repère préalable. Les habitats reçus apparaissent avec un contour vert ; le bloc visé est souligné en doré et sa fiche apparaît en bas à droite. **F8** ouvre les détails du bloc visé et le catalogue (touche reconfigurable).
 
 ## Surveillance des habitats
 
@@ -10,7 +10,8 @@ By FastedCorsi — 0.2.1
 - Position, distance, apparence et espèces d'affichage transmises par Cobblemon.
 - Jusqu'à 64 repères persistants, stockés localement et séparés par serveur, sous-serveur Tropimon et dimension.
 - Distingue bloc présent, absent et chunk non chargé. Un repère non chargé n'est jamais présenté comme encore actif.
-- Petit HUD des trois repères épinglés les plus proches.
+- HUD automatique : informations propres au bloc visé, trois habitats proches et trois repères suivis. Jusqu'à six espèces d'affichage sont visibles dans la fiche compacte ; le nombre restant et l'accès aux détails sont indiqués.
+- Contours dans le monde pour les 64 habitats chargés les plus proches dans le rayon surveillé. Le rendu respecte la profondeur ; un bloc de décor ordinaire n'est pas un habitat même s'il a la même apparence.
 - Lecture bornée des entités de bloc toutes les deux secondes ; aucun scan volumique, chargement de chunk forcé ou requête de spawn.
 
 Dans Cobblemon 1.8.0/1.8.1, les paquets ordinaires de ces blocs ne transmettent **ni phase active ni délai de spawn**. Les getters locaux correspondants contiennent des valeurs par défaut : ils ne sont pas utilisés. Les espèces d'affichage ne sont pas présentées comme la liste complète des apparitions.
@@ -51,7 +52,9 @@ Le build local exige un unique JAR Cobblemon actif. `TROPIMON_HOME` permet de ch
 
 ## Distribution
 
-Deux exemplaires identiques sont produits dans `build/release/0.2.1/local` et `build/release/0.2.1/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
+Le nom public et les JAR de livraison deviennent **Tropimon Better Farm** / `TropimonBetterFarm`. L'identifiant Fabric `tropimon_farm`, les fichiers de configuration et le dépôt officiel `FastedCorsi/TropimonFarm` sont conservés pour les repères existants et l'auto-update. L'installateur reconnaît l'ancien JAR par son identifiant et le sauvegarde hors du dossier des mods avant remplacement.
+
+Deux exemplaires identiques sont produits dans `build/release/0.3.0/local` et `build/release/0.3.0/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
 
 L'auto-update est autonome : uniquement la Release du dépôt de ce mod, SHA-256, identifiant et version exacts, préparation hors des mods, remplacement différé après arrêt du jeu sous Windows. Vérification asynchrone au démarrage, espacée d'au moins six heures entre les sessions. Désactivation locale possible dans le fichier `config/<mod_id>-updater.json`.
 

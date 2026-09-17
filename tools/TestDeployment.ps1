@@ -9,7 +9,7 @@ $delivery=Join-Path $fixture 'delivery'
 New-Item -ItemType Directory -Path (Join-Path $instance 'mods'),$delivery | Out-Null
 $script=Join-Path $delivery 'install-local-deferred.ps1'
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'install-local-deferred.ps1') -Destination $script
-$source=Join-Path $delivery 'TropimonFarm-0.1.0+1.21.1-LOCAL.jar'
+$source=Join-Path $delivery 'TropimonBetterFarm-0.1.0+1.21.1-LOCAL.jar'
 Copy-Item -LiteralPath $Jar -Destination $source
 $hash=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
 [IO.File]::WriteAllText($source+'.sha256',$hash)
@@ -20,9 +20,13 @@ $state=Get-Content -LiteralPath (Join-Path $delivery 'install-status.json') -Raw
 if($state.state -ne 'installed'){throw 'Clean installation failed'}
 $installed=Join-Path $instance ('mods/'+(Split-Path $source -Leaf))
 if((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $hash){throw 'Installed hash mismatch'}
+# The public name changes; the stable Fabric id must migrate an old-named installation.
+$previousName=Join-Path $instance 'mods/TropimonFarm-previous-LOCAL.jar'
+Move-Item -LiteralPath $installed -Destination $previousName
 & $script -LauncherRoot $instance
 $state=Get-Content -LiteralPath (Join-Path $delivery 'install-status.json') -Raw | ConvertFrom-Json
 if($state.state -ne 'installed'){throw 'Replacement failed'}
+if(Test-Path -LiteralPath $previousName){throw 'Old-named JAR still loaded after migration'}
 if(@(Get-ChildItem -LiteralPath (Join-Path $instance 'mod-archive') -Recurse -Filter '*.jar' -File).Count -lt 1){throw 'Backup missing'}
 # A corrupt staged file must not replace the verified installation.
 [IO.File]::WriteAllText($source+'.sha256',('0'*64))

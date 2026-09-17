@@ -90,10 +90,7 @@ public final class HabitatMonitor {
     }
     if (++ticks >= 40) {
       ticks = 0;
-      if (!pins.isEmpty()
-          || client.currentScreen instanceof HabitatRadarScreen
-          || client.currentScreen instanceof HabitatCycleScreen
-          || client.currentScreen instanceof HabitatBlocksScreen) scan(client);
+      scan(client);
     }
   }
 
@@ -154,30 +151,41 @@ public final class HabitatMonitor {
   }
 
   private void observe(Map<BlockPos, Observation> dest, HabitatBlockEntity block, long now) {
+    dest.put(block.getPos().toImmutable(), observation(block, now));
+  }
+
+  Observation targeted(MinecraftClient client) {
+    if (client.world == null
+        || !(client.crosshairTarget instanceof net.minecraft.util.hit.BlockHitResult hit)
+        || hit.getType() != net.minecraft.util.hit.HitResult.Type.BLOCK) return null;
+    var entity = client.world.getBlockEntity(hit.getBlockPos());
+    return entity instanceof HabitatBlockEntity habitat
+        ? observation(habitat, System.currentTimeMillis())
+        : null;
+  }
+
+  private Observation observation(HabitatBlockEntity block, long now) {
     // The normal sync omits pool, phase and spawning settings: getters for those contain defaults.
     List<String> species =
         block.getDisplaySpeciesIds().stream().map(Object::toString).limit(32).toList();
     BlockPos pos = block.getPos().toImmutable();
-    dest.put(
+    return new Observation(
         pos,
-        new Observation(
-            pos,
-            block.getMimicId().toString(),
-            species,
-            true,
-            true,
-            now,
-            pins.contains(pos),
-            block
-                .getCachedState()
-                .get(
-                    com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion
-                        .getACTIVATED_STYLE()),
-            block
-                .getCachedState()
-                .get(
-                    com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion
-                        .getCANCELS_REGULAR_SPAWNS())));
+        block.getMimicId().toString(),
+        species,
+        true,
+        true,
+        now,
+        pins.contains(pos),
+        block
+            .getCachedState()
+            .get(
+                com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion.getACTIVATED_STYLE()),
+        block
+            .getCachedState()
+            .get(
+                com.cobblemon.mod.common.block.habitat.HabitatBlock.Companion
+                    .getCANCELS_REGULAR_SPAWNS()));
   }
 
   boolean toggle(BlockPos pos) {

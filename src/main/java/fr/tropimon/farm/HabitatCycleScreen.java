@@ -22,7 +22,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
   private final List<String> lines = new ArrayList<>();
 
   public HabitatCycleScreen(BlockPos pos) {
-    super("Tropimon Farm · cycles");
+    super("Tropimon Better Farm · cycles");
     this.pos = pos.toImmutable();
     scope = HabitatMonitor.INSTANCE.scopeRevision();
   }

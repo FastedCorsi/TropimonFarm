@@ -270,7 +270,12 @@ final class HabitatPhaseAudit {
       }
       case 8 -> {
         if (!(c.world.getBlockEntity(pos) instanceof HabitatBlockEntity)) return false;
+        HabitatOverlay.tick(c);
+        check(HabitatOverlay.visible(c), "in-game overlay active before region switch");
         HabitatMonitor.regionChanged("audit-other-region");
+        check(
+            !HabitatOverlay.visible(c),
+            "region switch hides stale overlay before next client tick");
         HabitatMonitor.INSTANCE.tick(c);
         check(
             HabitatMonitor.INSTANCE.entries(c).stream().noneMatch(e -> e.pinned()),

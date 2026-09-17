@@ -21,7 +21,7 @@ public final class FarmScreen extends InstrumentScreen {
   private final List<String> lines = new ArrayList<>();
 
   public FarmScreen() {
-    super("Tropimon Farm");
+    super("Tropimon Better Farm");
   }
 
   @Override
@@ -142,7 +142,7 @@ public final class FarmScreen extends InstrumentScreen {
   @Override
   public void render(DrawContext c, int mouseX, int mouseY, float delta) {
     int mx = localX(mouseX), my = localY(mouseY);
-    begin(c, ACCENT, "TROPIMON / FARM", "Détecteur de conditions · habitats & apparitions");
+    begin(c, ACCENT, "TROPIMON / BETTER FARM", "Détecteur de conditions · habitats & apparitions");
     chip(c, "Radar des habitats", 367, 16, 163, false, ACCENT);
     c.fill(16, 54, 266, 308, PANEL);
     search.render(c, mx, my, delta);

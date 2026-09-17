@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "tropimon_farm",
   "version": "${version}",
-  "name": "Tropimon Farm",
-  "description": "By FastedCorsi — Farm autonome pour Tropimon.",
+  "name": "Tropimon Better Farm",
+  "description": "By FastedCorsi — Habitats en jeu, cycles et terrain pour Tropimon.",
   "authors": [
     "By FastedCorsi"
   ],

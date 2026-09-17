@@ -68,7 +68,7 @@ tasks.register("prepareReleaseDelivery") {
         for (kind in listOf("local", "shareable")) {
             val dir = layout.buildDirectory.dir("release/${project.version}/$kind").get().asFile.apply { mkdirs() }
             val suffix = if (kind == "local") "-LOCAL" else ""
-            val dest = dir.resolve("TropimonFarm-${project.version}+1.21.1$suffix.jar")
+            val dest = dir.resolve("TropimonBetterFarm-${project.version}+1.21.1$suffix.jar")
             source.copyTo(dest, true)
             val hash = MessageDigest.getInstance("SHA-256").digest(dest.readBytes()).joinToString("") { "%02x".format(it) }
             dest.resolveSibling(dest.name + ".sha256").writeText(hash + "\n")

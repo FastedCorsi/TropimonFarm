@@ -15,7 +15,12 @@ public final class HabitatRadarScreen extends InstrumentScreen {
   private String feedback = "";
 
   public HabitatRadarScreen() {
-    super("Tropimon Farm · radar d'habitats");
+    this(null);
+  }
+
+  public HabitatRadarScreen(BlockPos selected) {
+    super("Tropimon Better Farm · radar d'habitats");
+    this.selected = selected;
   }
 
   @Override

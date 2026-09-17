@@ -1,9 +1,10 @@
 # Confidentialité permanente des mods Tropimon
 
-## Périmètre permanent de Tropimon Farm
+## Périmètre permanent de Tropimon Better Farm
 
-- Tropimon Farm reste uniquement client. Aucun composant serveur requis, accès au serveur intégré pour enrichir l'interface ou requête automatique de données réservées à l'éditeur.
+- Tropimon Better Farm reste uniquement client. Aucun composant serveur requis, accès au serveur intégré pour enrichir l'interface ou requête automatique de données réservées à l'éditeur.
 - Garder une interface compacte dans l'esprit Cobblemon/Tropimon. Montrer les icônes des blocs utiles à la reconnaissance et les exigences de terrain du catalogue, sans confondre apparence, conditions déclarées et zone confirmée.
+- La détection doit fonctionner directement en jeu, sans ouvrir une interface : contours des habitats reçus et fiche propre au bloc visé. Les écrans sont un complément pour les détails et le catalogue.
 - Distinguer les données synchronisées, les catalogues locaux et les hypothèses de cycle. Ne jamais présenter une phase supposée ou un Pokémon possible comme une observation confirmée du serveur.
 - Les accès serveur du diagnostic restent dans le source set de test, exclu des JAR livrés.
 
