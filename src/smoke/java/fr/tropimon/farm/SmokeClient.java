@@ -144,6 +144,21 @@ public final class SmokeClient implements ClientModInitializer {
               }
               case 21 -> {
                 shot(client, "farm-cycles");
+                var cycle = (HabitatCycleScreen) screen;
+                screen.mouseClicked(
+                    cycle.left + 30 * cycle.scale, cycle.top + 300 * cycle.scale, 0);
+                require(
+                    client.currentScreen instanceof HabitatBlocksScreen,
+                    "cycle terrain button opens block guide");
+                screen = client.currentScreen;
+                stage = 22;
+                ticks = 0;
+              }
+              case 22 -> {
+                require(
+                    field(screen, "observed") != null,
+                    "terrain guide shows synchronized habitat block");
+                shot(client, "farm-blocks");
                 HabitatClock.reset();
                 require(HabitatClock.age() == -1, "clock reset clears prior session age");
                 screen = new FarmScreen();
@@ -158,6 +173,62 @@ public final class SmokeClient implements ClientModInitializer {
                     ((List<?>) field(screen, "filtered")).size() > 100,
                     "habitat catalogue populated");
                 shot(client, "farm-catalogue");
+                var selected =
+                    ((List<FarmCatalog.Entry>) field(screen, "filtered"))
+                        .stream()
+                            .filter(
+                                e ->
+                                    e.details().stream()
+                                        .anyMatch(
+                                            d ->
+                                                d.contains("neededBaseBlocks")
+                                                    || d.contains("neededNearbyBlocks")))
+                            .findFirst();
+                // Habitat pools may omit block conditions: use the same installed world-spawn
+                // catalogue.
+                if (selected.isEmpty())
+                  selected =
+                      ((FarmCatalog.Result) field(screen, "catalog"))
+                          .entries().stream()
+                              .filter(
+                                  e ->
+                                      e.details().stream()
+                                          .anyMatch(
+                                              d ->
+                                                  d.contains("neededBaseBlocks")
+                                                      || d.contains("neededNearbyBlocks")))
+                              .findFirst();
+                require(
+                    selected.isPresent(),
+                    "installed catalogue includes block requirements and presets");
+                screen =
+                    new HabitatBlocksScreen(
+                        screen,
+                        habitatPos,
+                        List.of(selected.get()),
+                        "Catalogue local · essai isolé");
+                client.setScreen(screen);
+                stage = 23;
+                ticks = 0;
+              }
+              case 23 -> {
+                require(
+                    !((List<?>) field(screen, "rows")).isEmpty(), "block requirements rendered");
+                boolean icon = false;
+                for (var row : (List<?>) field(screen, "rows"))
+                  if (!((net.minecraft.item.ItemStack) field(row, "icon")).isEmpty()) icon = true;
+                require(icon, "required blocks have real item icons");
+                shot(client, "farm-block-conditions");
+                var blocks = (HabitatBlocksScreen) screen;
+                screen.mouseClicked(
+                    blocks.left + 30 * blocks.scale, blocks.top + 125 * blocks.scale, 0);
+                require((boolean) field(screen, "expanded"), "client block tags can be expanded");
+                for (int i = 0; i < 6; i++) screen.mouseScrolled(0, 0, 0, -1);
+                stage = 24;
+                ticks = 0;
+              }
+              case 24 -> {
+                shot(client, "farm-block-tags");
                 client
                     .getServer()
                     .submit(() -> client.getServer().getOverworld().removeBlock(habitatPos, false))

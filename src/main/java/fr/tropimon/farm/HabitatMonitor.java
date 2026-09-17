@@ -92,7 +92,8 @@ public final class HabitatMonitor {
       ticks = 0;
       if (!pins.isEmpty()
           || client.currentScreen instanceof HabitatRadarScreen
-          || client.currentScreen instanceof HabitatCycleScreen) scan(client);
+          || client.currentScreen instanceof HabitatCycleScreen
+          || client.currentScreen instanceof HabitatBlocksScreen) scan(client);
     }
   }
 

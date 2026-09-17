@@ -62,7 +62,8 @@ final class FarmCatalog {
         if (!Files.isDirectory(data)) continue;
         try (var namespaces = Files.list(data)) {
           for (Path namespace : namespaces.filter(Files::isDirectory).toList())
-            for (String kind : List.of("habitat_pools", "spawn_pool_world")) {
+            for (String kind :
+                List.of("habitat_pools", "spawn_pool_world", "spawn_detail_presets")) {
               Path dir = namespace.resolve(kind);
               if (!Files.isDirectory(dir)) continue;
               try (var paths = Files.walk(dir)) {
@@ -136,6 +137,20 @@ final class FarmCatalog {
             if (!Set.of("spawns", "name", "enabled", "neededInstalledMods", "neededUninstalledMods")
                 .contains(field.getKey()))
               details.add("Habitat / " + field.getKey() + " : " + field.getValue());
+          if (spawn.has("presets") && spawn.get("presets").isJsonArray())
+            for (var preset : spawn.getAsJsonArray("presets")) {
+              String id = preset.getAsString();
+              String[] parts = (id.contains(":") ? id : "cobblemon:" + id).split(":", 2);
+              JsonObject definition =
+                  files.get(parts[0] + "/spawn_detail_presets/" + parts[1] + ".json");
+              details.add(
+                  "Préréglage "
+                      + id
+                      + " : "
+                      + (definition == null
+                          ? "indisponible dans les ressources locales"
+                          : definition));
+            }
           entries.add(
               new Entry(
                   habitat,

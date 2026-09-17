@@ -161,7 +161,7 @@ public final class FarmScreen extends InstrumentScreen {
     scope(c, 318, 105);
     label(c, "CIBLE SUIVIE", 367, 66, ACCENT);
     label(c, textRenderer.trimToWidth(target.isBlank() ? "Aucune" : target, 164), 367, 84, WHITE);
-    label(c, "Guide, pas un radar spatial", 367, 101, MUTED);
+    chip(c, "Blocs / zone", 367, 98, 163, false, ACCENT);
     chip(c, "Épingler la sélection", 367, 123, 163, false, ACCENT);
     chip(
         c,
@@ -210,6 +210,17 @@ public final class FarmScreen extends InstrumentScreen {
     int mx = localX(x), my = localY(y);
     if (hit(mx, my, 367, 16, 163, 21)) {
       client.setScreen(new HabitatRadarScreen());
+      return true;
+    }
+    if (hit(mx, my, 367, 98, 163, 21) && selected != null) {
+      client.setScreen(
+          new HabitatBlocksScreen(
+              this,
+              null,
+              List.of(selected),
+              snapshot
+                  ? "Tropimon · instantané HB 1.4.0"
+                  : "Catalogue local · réglages non confirmés"));
       return true;
     }
     search.setFocused(hit(mx, my, 24, 63, 233, 18));

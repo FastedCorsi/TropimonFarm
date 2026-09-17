@@ -1,6 +1,6 @@
 # Tropimon Farm
 
-By FastedCorsi — 0.2.0
+By FastedCorsi — 0.2.1
 
 **F8** : radar des nouveaux blocs d'habitat (touche reconfigurable).
 
@@ -16,6 +16,10 @@ By FastedCorsi — 0.2.0
 Dans Cobblemon 1.8.0/1.8.1, les paquets ordinaires de ces blocs ne transmettent **ni phase active ni délai de spawn**. Les getters locaux correspondants contiennent des valeurs par défaut : ils ne sont pas utilisés. Les espèces d'affichage ne sont pas présentées comme la liste complète des apparitions.
 
 ## Catalogue et conditions
+
+L'interface compacte utilise des panneaux gris, des accents verts, des boutons en relief et un repère Poké Ball. **Reconnaître le bloc / zone** montre le bloc d'habitat réellement reçu, son apparence avec icône et ses coordonnées. L'apparence seule d'un bloc ordinaire ne prouve pas un habitat.
+
+**Blocs / zone**, depuis le catalogue ou la phase choisie, détaille les blocs au sol ou à proximité, les biomes, structures et autres critères déclarés. Les préréglages des ressources locales sont inclus et identifiés séparément. Les groupes d'exclusion restent groupés : leurs critères ne sont pas présentés comme des interdictions indépendantes. Les tags peuvent être développés pour afficher les blocs connus du client (256 premiers membres par tag, avec indication du total). Ces conditions ne sont pas évaluées sur place ; poser les blocs indiqués ne crée pas un habitat.
 
 Depuis un bloc sélectionné dans le radar, **Cycles / Pokémon possibles** affiche les habitats candidats d'après les espèces reçues, puis les Pokémon et conditions de chaque phase. Le style activé/naturel et l'annulation des apparitions ordinaires proviennent de l'état de bloc synchronisé.
 
@@ -47,7 +51,7 @@ Le build local exige un unique JAR Cobblemon actif. `TROPIMON_HOME` permet de ch
 
 ## Distribution
 
-Deux exemplaires identiques sont produits dans `build/release/0.2.0/local` et `build/release/0.2.0/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
+Deux exemplaires identiques sont produits dans `build/release/0.2.1/local` et `build/release/0.2.1/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
 
 L'auto-update est autonome : uniquement la Release du dépôt de ce mod, SHA-256, identifiant et version exacts, préparation hors des mods, remplacement différé après arrêt du jeu sous Windows. Vérification asynchrone au démarrage, espacée d'au moins six heures entre les sessions. Désactivation locale possible dans le fichier `config/<mod_id>-updater.json`.
 

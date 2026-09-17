@@ -142,7 +142,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
       for (String detail : e.details()) if (!detail.startsWith("Ressource :")) add("  " + detail);
     }
     if (lines.isEmpty()) add("Aucune entrée du catalogue pour cette phase.");
-    scroll = Math.clamp(scroll, 0, Math.max(0, lines.size() - 8));
+    scroll = Math.clamp(scroll, 0, Math.max(0, lines.size() - 7));
   }
 
   @Override
@@ -242,9 +242,11 @@ public final class HabitatCycleScreen extends InstrumentScreen {
         22,
         187,
         MUTED);
-    c.fill(18, 201, 541, 307, PANEL);
-    for (int i = 0; i < 8 && scroll + i < lines.size(); i++)
+    c.fill(18, 201, 541, 286, PANEL);
+    for (int i = 0; i < 7 && scroll + i < lines.size(); i++)
       label(c, lines.get(scroll + i), 23, 205 + i * 12, WHITE);
+    chip(c, "Blocs / zone de cette phase", 20, 291, 240, false, ACCENT);
+    label(c, "Molette : Pokémon et conditions", 278, 298, MUTED);
     end(c);
   }
 
@@ -256,6 +258,19 @@ public final class HabitatCycleScreen extends InstrumentScreen {
       return true;
     }
     if (invalid) return super.mouseClicked(x, y, button);
+    if (hit(mx, my, 20, 291, 240, 21) && pool() != null) {
+      client.setScreen(
+          new HabitatBlocksScreen(
+              this,
+              pos,
+              pool().entries().stream()
+                  .filter(e -> FarmCatalog.phaseMatches(e.phases(), viewPhase))
+                  .toList(),
+              snapshot
+                  ? "Tropimon · instantané HB 1.4.0"
+                  : "Catalogue local · réglages non confirmés"));
+      return true;
+    }
     if (hit(mx, my, 20, 54, 256, 21)) {
       snapshot = !snapshot;
       load();
@@ -298,7 +313,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
 
   @Override
   public boolean mouseScrolled(double x, double y, double h, double v) {
-    scroll = Math.clamp(scroll + (v > 0 ? -1 : 1), 0, Math.max(0, lines.size() - 8));
+    scroll = Math.clamp(scroll + (v > 0 ? -1 : 1), 0, Math.max(0, lines.size() - 7));
     return true;
   }
 }

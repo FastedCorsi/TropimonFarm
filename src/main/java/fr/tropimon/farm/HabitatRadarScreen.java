@@ -153,7 +153,17 @@ public final class HabitatRadarScreen extends InstrumentScreen {
           entry.present() ? WHITE : MUTED);
     }
     var entry = chosen();
-    label(c, entry == null ? "Aucun habitat reçu" : "BLOC SOUS SURVEILLANCE", 285, 65, ACCENT);
+    var mimic = entry == null ? null : HabitatBlocksScreen.block(entry.mimic());
+    if (mimic != null) c.drawItem(mimic.asItem().getDefaultStack(), 285, 61);
+    label(
+        c,
+        entry == null
+            ? "Aucun habitat reçu"
+            : textRenderer.trimToWidth(
+                mimic == null ? "BLOC D'HABITAT" : mimic.getName().getString(), 229),
+        mimic == null ? 285 : 306,
+        65,
+        ACCENT);
     if (entry == null)
       text(
           c,
@@ -176,7 +186,7 @@ public final class HabitatRadarScreen extends InstrumentScreen {
         label(c, details.get(detailOffset + i), 285, 119 + i * 13, WHITE);
       label(c, "Molette : détails / liste", 285, 235, MUTED);
       chip(c, "Cycles / Pokémon possibles", 284, 257, 252, false, ACCENT);
-      label(c, "Correspondance à vérifier · client seul", 285, 285, MUTED);
+      chip(c, "Reconnaître le bloc / zone", 284, 283, 252, false, ACCENT);
     }
     end(c);
   }
@@ -190,6 +200,12 @@ public final class HabitatRadarScreen extends InstrumentScreen {
     }
     if (hit(mx, my, 284, 257, 252, 21) && chosen() != null) {
       client.setScreen(new HabitatCycleScreen(chosen().pos()));
+      return true;
+    }
+    if (hit(mx, my, 284, 283, 252, 21) && chosen() != null) {
+      client.setScreen(
+          new HabitatBlocksScreen(
+              this, chosen().pos(), List.of(), "Observation du bloc · client seul"));
       return true;
     }
     if (hit(mx, my, 22, 244, 241, 56)) {
