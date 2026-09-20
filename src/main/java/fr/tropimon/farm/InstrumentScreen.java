@@ -21,17 +21,17 @@ abstract class InstrumentScreen extends Screen {
 
   @Override
   protected void init() {
-    scale = Math.min(1F, Math.min((width - 36F) / W, (height - 36F) / H));
+    scale = Math.min(1F, Math.min((width - 16F) / W, (height - 16F) / H));
     left = (int) ((width - W * scale) / 2);
     top = (int) ((height - H * scale) / 2);
   }
 
   protected int localX(double x) {
-    return (int) ((x - left) / scale);
+    return (int) Math.floor((x - left) / scale);
   }
 
   protected int localY(double y) {
-    return (int) ((y - top) / scale);
+    return (int) Math.floor((y - top) / scale);
   }
 
   protected void begin(DrawContext c, int accent, String label, String subtitle) {

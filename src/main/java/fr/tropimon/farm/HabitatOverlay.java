@@ -75,7 +75,7 @@ final class HabitatOverlay {
     var client = MinecraftClient.getInstance();
     if (!visible(client)) return;
     if (nearby.isEmpty() && watched.isEmpty() && target == null) return;
-    int width = Math.min(248, client.getWindow().getScaledWidth() / 2 - 16);
+    int width = Math.min(248, client.getWindow().getScaledWidth() - 16);
     int x = client.getWindow().getScaledWidth() - width - 8;
     List<String> rows = new ArrayList<>();
     rows.add("Tropimon Better Farm");
@@ -113,13 +113,20 @@ final class HabitatOverlay {
                     ? "hors chargement"
                     : !o.present() ? "absent" : distance(o, client) + " m"));
     }
-    int y = Math.max(8, client.getWindow().getScaledHeight() - rows.size() * 11 - 42);
-    context.fill(x - 4, y - 3, x + width + 4, y + rows.size() * 11 + 3, 0xDC292D30);
+    var lines = new ArrayList<net.minecraft.text.OrderedText>();
+    for (String row : rows) lines.addAll(client.textRenderer.wrapLines(Text.literal(row), width));
+    int maxRows = Math.max(2, (client.getWindow().getScaledHeight() - 56) / 11);
+    if (lines.size() > maxRows) {
+      lines.subList(maxRows - 1, lines.size()).clear();
+      lines.add(Text.literal(detailsKey + " : fiche complète et repères").asOrderedText());
+    }
+    int y = Math.max(8, client.getWindow().getScaledHeight() - lines.size() * 11 - 42);
+    context.fill(x - 4, y - 3, x + width + 4, y + lines.size() * 11 + 3, 0xDC292D30);
     context.fill(x - 4, y - 3, x + width + 4, y - 1, 0xFF86E3AD);
-    for (int i = 0; i < rows.size(); i++)
+    for (int i = 0; i < lines.size(); i++)
       context.drawText(
           client.textRenderer,
-          client.textRenderer.trimToWidth(rows.get(i), width),
+          lines.get(i),
           x,
           y + i * 11,
           i == 0 ? 0xFF86E3AD : 0xFFF1F3EC,

@@ -47,7 +47,10 @@ public final class SmokeClient implements ClientModInitializer {
                 stage = 0;
                 ticks = 0;
                 client.options.getViewDistance().setValue(2);
-                client.options.getGuiScale().setValue(2);
+                client.options.getGuiScale().setValue(Integer.getInteger("tropimon.smoke.guiScale", 2));
+                client.onResolutionChanged();
+                System.out.println("FARM_GUI viewport=" + client.getWindow().getScaledWidth() + "x"
+                    + client.getWindow().getScaledHeight() + " effective=" + client.getWindow().getScaleFactor());
                 client.options.pauseOnLostFocus = false;
                 client
                     .getTutorialManager()

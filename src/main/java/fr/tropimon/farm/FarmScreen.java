@@ -338,7 +338,8 @@ public final class FarmScreen extends InstrumentScreen {
           var state = preview.materials().get(i);
           c.drawItem(state.getBlock().asItem().getDefaultStack(), 244 + i * 19, 230);
           if (hit(mx, my, 244 + i * 19, 230, 16, 16))
-            c.drawTooltip(textRenderer, state.getBlock().getName(), mx, my);
+            // Draw after the panel matrix is restored, with the native readable font.
+            setTooltip(state.getBlock().getName());
         }
       } else
         text(
