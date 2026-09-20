@@ -1,6 +1,6 @@
 # Tropimon Better Farm
 
-By FastedCorsi — 0.3.2
+By FastedCorsi — 0.3.3
 
 La détection fonctionne **directement en jeu**, sans écran ouvert ni repère préalable. Les habitats reçus apparaissent avec un contour vert ; le bloc visé est souligné en doré et sa fiche apparaît en bas à droite. **F8** ouvre les détails du bloc visé et le catalogue (touche reconfigurable).
 
@@ -60,7 +60,7 @@ Le build local exige un unique JAR Cobblemon actif. `TROPIMON_HOME` permet de ch
 
 Le nom public et les JAR de livraison deviennent **Tropimon Better Farm** / `TropimonBetterFarm`. L'identifiant Fabric `tropimon_farm`, les fichiers de configuration et le dépôt officiel `FastedCorsi/TropimonFarm` sont conservés pour les repères existants et l'auto-update. L'installateur reconnaît l'ancien JAR par son identifiant et le sauvegarde hors du dossier des mods avant remplacement.
 
-Deux exemplaires identiques sont produits dans `build/release/0.3.2/local` et `build/release/0.3.2/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
+Deux exemplaires identiques sont produits dans `build/release/0.3.3/local` et `build/release/0.3.3/shareable`, avec SHA-256. Ne jamais charger les deux exemplaires. Le script du dossier local attend l'arrêt de Minecraft, vérifie les empreintes, conserve l'ancien JAR hors des mods et refuse une cible modifiée depuis la préparation. Le launcher peut rester ouvert.
 
 L'auto-update est autonome : uniquement la Release du dépôt de ce mod, SHA-256, identifiant et version exacts, préparation hors des mods, remplacement différé après arrêt du jeu sous Windows. Vérification asynchrone au démarrage, espacée d'au moins six heures entre les sessions. Désactivation locale possible dans le fichier `config/<mod_id>-updater.json`.
 
