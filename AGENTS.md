@@ -7,6 +7,7 @@
 - La détection doit fonctionner directement en jeu, sans ouvrir une interface : contours des habitats reçus et fiche propre au bloc visé. Les écrans sont un complément pour les détails et le catalogue.
 - Distinguer les données synchronisées, les catalogues locaux et les hypothèses de cycle. Ne jamais présenter une phase supposée ou un Pokémon possible comme une observation confirmée du serveur.
 - Les accès serveur du diagnostic restent dans le source set de test, exclu des JAR livrés.
+- Les aperçus de structures utilisent les modèles locaux associés par leur PoolId. Ne jamais présenter un modèle ou une pièce comme une observation du terrain serveur ; signaler une ressource indisponible au lieu d'inventer un aperçu.
 
 Cette règle demandée par l'utilisateur s'applique à toute création, correction, optimisation, compilation et livraison des mods Tropimon de ce dépôt, y compris leurs futurs modules.
 
@@ -74,7 +75,39 @@ Cette règle demandée par l'utilisateur s'applique à toute création, correcti
 
 ## Dépôts publics et auto-update autonome
 
+### Launcher à profils : cible réellement chargée
+
+- Le répertoire du programme et de son runtime est distinct des données du launcher ; ne jamais en déduire un sous-dossier mods.
+- Pour les futures compilations et installations, détecter et vérifier le profil actif. Les données peuvent se trouver sous `%APPDATA%/.tropimon/profiles/<profil>/instance` ; ne pas figer le nom du profil ni un chemin propre à une machine.
+- Dans le mod, déterminer le JAR réellement chargé depuis l'origine du ModContainer Fabric, puis dériver et vérifier son dossier mods et son instance pour l'auto-update.
+- L'installateur externe doit identifier et vérifier le profil actif avant toute copie. Le dossier mods historique à la racine des données peut être un miroir géré par le launcher et ne constitue pas une preuve d'installation.
+- Ne déclarer une installation réussie qu'après contrôle du JAR, de ses métadonnées et de son SHA-256 dans le profil actif. En cas d'ambiguïté, conserver le livrable préparé sans remplacement.
+- Une notification de changement de launcher ou une mise à jour de ces consignes ne déclenche aucun build ni aucune installation. Team Hunt et Bid Maker restent en pause.
+
 - Chaque mod livré possède son dépôt GitHub public propre. Chaque version validée est poussée, taguée et publiée dans une Release avec exactement un JAR partageable et son fichier SHA-256 ; les livrables LOCAL et les données propres à une machine ne sont jamais publiés.
 - Chaque mod embarque une copie autonome et légère de son système de mise à jour, dans son propre package. Aucun mod ne dépend des classes ou du service de mise à jour d'un autre mod Tropimon.
 - L'updater accepte uniquement la Release officielle du dépôt du mod, vérifie le SHA-256 puis l'identifiant et la version de fabric.mod.json. Il prépare hors du dossier mods, attend l'arrêt de Minecraft sans fermer le launcher, conserve une sauvegarde hors des mods chargés et n'écrase jamais une cible modifiée depuis la préparation.
 - Conserver une vérification asynchrone espacée, sans travail par tick ou par frame. Une livraison de code doit mettre à jour le dépôt, le tag et la Release correspondants après réussite des contrôles de compatibilité, de tests et de confidentialité.
+
+
+## Installation locale prise en charge par l’agent
+
+- Lors des prochaines livraisons Tropimon, l’agent réalise lui-même l’installation locale autorisée ; ne pas demander à l’utilisateur de recopier ou réimporter le JAR si l’opération peut être menée sûrement avec les outils disponibles.
+- Détecter le profil et la gestion des mods du launcher. Une copie dans `instance/mods` seule ne constitue pas une installation valide lorsque le launcher utilise `instance/mods-user` et `user-mods-tracked.json`.
+- Sur ce schéma vérifié, synchroniser la copie importée, la copie chargée et le suivi du seul mod livré. Préserver les autres mods, leurs désactivations et le manifeste officiel ; ne jamais désactiver le contrôle des mods non gérés ni assouplir une protection du launcher.
+- Réutiliser l’installateur local `InstallManagedLocalMod.ps1` lorsqu’il est disponible et en joindre une copie autonome à la livraison LOCAL. Remplacer ou adapter l’ancienne entrée d’installation avant de la lancer sur un profil géré ; un ancien script limité au dossier `mods` ne doit pas être utilisé tel quel. Aucun outil local n’est embarqué dans le JAR partageable, aucune dépendance entre mods n’est ajoutée.
+- Attendre l’arrêt du jeu concerné sans forcer le launcher ni Minecraft. Vérifier les SHA-256, l’identifiant et la version, empêcher doublons et retours de version, sauvegarder hors des dossiers chargés et refuser les cibles modifiées, verrouillées, redirigées ou ambiguës. Une évolution inconnue du format impose une nouvelle vérification, pas une modification forcée.
+- Vérifier les deux copies et l’enregistrement du launcher après installation ; indiquer séparément l’état sur disque et une éventuelle validation en jeu. Les auto-updaters doivent respecter ce stockage géré lorsqu’ils sont adaptés ; une règle ou un installateur local corrigé ne répare pas rétroactivement les JAR déjà distribués.
+- Ces consignes ne déclenchent pas à elles seules une compilation, une publication ni une modification des mods mis de côté. Tropimon Compagnon reste exclu tant que l’utilisateur demande de ne pas y toucher.
+
+
+## Consentement et mise à jour indépendante du launcher
+
+- Toute récupération de fichier, y compris JAR, empreinte et catalogue externe, exige un accord éclairé préalable du joueur. Ne jamais télécharger en arrière-plan avant cet accord.
+- La vérification des métadonnées de mise à jour est désactivée sans consentement explicite ; un ancien `enabled: true` généré automatiquement ne vaut pas accord. L'autorisation de vérifier ne vaut jamais autorisation de télécharger ou installer une version.
+- Présenter le mod, la version, la source officielle, les fichiers et le remplacement différé avec sauvegarde avant le bouton de téléchargement. Refuser, reporter ou fermer ne déclenche aucun téléchargement.
+- Chaque mod contient sa propre implémentation. Utiliser le Java existant et le JAR réellement chargé ; ne demander aucune modification du launcher, installation d'un outil ou chemin personnel.
+- Gérer le dossier mods classique et le stockage Tropimon reconnu. Conserver le nom enregistré, synchroniser les deux copies et préserver le suivi ainsi que les autres mods. Une disposition inconnue doit bloquer proprement, sans contourner une protection du launcher.
+- Tester le helper réellement exporté : attente de Minecraft, fichiers modifiés/verrouillés, sauvegarde, deux types de stockage et absence de consentement. Ne pas confondre un installateur local validé avec l'updater livré aux joueurs.
+
+- Canal de transition : publier les nouvelles releases stables avec `--latest=false` et la mention `<!-- tropimon-consent-updater:2 -->` dans leurs notes. Vérifier après publication que `/releases/latest` reste inchangé ; les anciens updaters non consentis ne doivent pas être déclenchés pour récupérer le correctif. Le nouvel updater sélectionne ce canal dans `/releases?per_page=20`. Une première installation manuelle peut être nécessaire depuis une version ancienne.

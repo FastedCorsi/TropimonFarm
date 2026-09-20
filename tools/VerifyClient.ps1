@@ -35,7 +35,7 @@ if ($activeCobblemon.Count -ne 1) {
 }
 Get-ChildItem -LiteralPath $mods -Filter 'Cobblemon-fabric-*.jar' -File |
     ForEach-Object { Remove-Item -LiteralPath $_.FullName }
-Copy-Item -LiteralPath $activeCobblemon[0].FullName -Destination $mods
+Copy-Item -LiteralPath $activeCobblemon[0].FullName -Destination (Join-Path $mods 'Cobblemon-fabric-verification.jar')
 $patterns = @('fabric-api-0.116.6+1.21.1.jar', 'fabric-language-kotlin-*.jar')
 if ($Mode -eq 'integrations') { $patterns += @('TropimodClient-*.jar', 'TropimonBuild-*.jar', '*xaero*.jar') }
 foreach ($pattern in $patterns) {

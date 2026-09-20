@@ -129,11 +129,11 @@ public final class HabitatCycleScreen extends InstrumentScreen {
     var p = pool();
     if (p == null) return;
     var o = observation();
-    if (o != null && o.present() && !invalid)
+    if (!snapshot && o != null && o.present() && !invalid)
       estimate = HabitatCycles.phase(sampledAge, pos.asLong(), p.phases(), order);
     if (p.phases() == 0) add("Phases non interprétables : estimation désactivée.");
     for (var e : p.entries()) {
-      if (!FarmCatalog.phaseMatches(e.phases(), viewPhase)) continue;
+      if (!snapshot && !FarmCatalog.phaseMatches(e.phases(), viewPhase)) continue;
       String id = HabitatCycles.speciesId(e.species());
       String species =
           Text.translatable("cobblemon.species." + id.substring(id.indexOf(':') + 1) + ".name")
@@ -162,7 +162,14 @@ public final class HabitatCycleScreen extends InstrumentScreen {
         256,
         snapshot,
         ACCENT);
-    chip(c, "Ordre supposé : " + order, 284, 54, 252, false, ACCENT);
+    chip(
+        c,
+        snapshot ? "Cycles désactivés sur Tropimon" : "Ordre supposé : " + order,
+        284,
+        54,
+        252,
+        false,
+        ACCENT);
     if (invalid) {
       text(
           c,
@@ -204,7 +211,9 @@ public final class HabitatCycleScreen extends InstrumentScreen {
         ACCENT);
     chip(
         c,
-        "Voir phase : " + viewPhase + " / " + (p == null ? "?" : p.phases()),
+        snapshot
+            ? "Toutes les apparitions du catalogue"
+            : "Voir phase : " + viewPhase + " / " + (p == null ? "?" : p.phases()),
         284,
         110,
         252,
@@ -212,9 +221,11 @@ public final class HabitatCycleScreen extends InstrumentScreen {
         ACCENT);
     label(
         c,
-        estimate == 0
-            ? "Phase estimée : inconnue (bloc, horloge ou ordre manquant)"
-            : "Phase estimée : " + estimate + " · cliquer pour afficher ses Pokémon",
+        snapshot
+            ? "Tropimon : aucun cycle à prédire."
+            : estimate == 0
+                ? "Phase estimée : inconnue (bloc, horloge ou ordre manquant)"
+                : "Phase estimée : " + estimate + " · cliquer pour afficher ses Pokémon",
         22,
         143,
         estimate == 0 ? MUTED : ACCENT);
@@ -264,7 +275,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
               this,
               pos,
               pool().entries().stream()
-                  .filter(e -> FarmCatalog.phaseMatches(e.phases(), viewPhase))
+                  .filter(e -> snapshot || FarmCatalog.phaseMatches(e.phases(), viewPhase))
                   .toList(),
               snapshot
                   ? "Tropimon · instantané HB 1.4.0"
@@ -276,7 +287,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
       load();
       return true;
     }
-    if (hit(mx, my, 284, 54, 252, 21)) {
+    if (!snapshot && hit(mx, my, 284, 54, 252, 21)) {
       order = HabitatCycles.Order.values()[(order.ordinal() + 1) % 4];
       rebuild();
       return true;
@@ -296,7 +307,7 @@ public final class HabitatCycleScreen extends InstrumentScreen {
       refresh();
       return true;
     }
-    if (hit(mx, my, 284, 110, 252, 21) && pool() != null) {
+    if (!snapshot && hit(mx, my, 284, 110, 252, 21) && pool() != null) {
       viewPhase = viewPhase % Math.max(1, pool().phases()) + 1;
       scroll = 0;
       rebuild();

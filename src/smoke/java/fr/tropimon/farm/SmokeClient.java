@@ -203,12 +203,88 @@ public final class SmokeClient implements ClientModInitializer {
                 ticks = 0;
               }
               case 3 -> {
-                if ((boolean) field(screen, "loading")) return;
+                if ((boolean) field(screen, "loading")
+                    || (boolean) field(screen, "indexing")
+                    || (boolean) field(screen, "previewLoading")) return;
                 require(field(screen, "catalog") != null, "catalogue loaded");
                 require(
                     ((List<?>) field(screen, "filtered")).size() > 100,
                     "habitat catalogue populated");
                 shot(client, "farm-catalogue");
+                require(
+                    ((List<?>) field(screen, "groups")).size()
+                        < ((List<?>) field(screen, "filtered")).size(),
+                    "catalogue groups repeated species into habitats");
+                require(
+                    field(screen, "preview") != null,
+                    "selected habitat has a real local structure preview");
+                var model = (StructurePreview.Model) field(screen, "preview");
+                require(
+                    !model.cells().isEmpty() && !model.materials().isEmpty(),
+                    "preview includes blocks and recognition materials");
+                var farm = (FarmScreen) screen;
+                screen.mouseClicked(farm.left + 330 * farm.scale, farm.top + 85 * farm.scale, 0);
+                require((int) field(screen, "tab") == 1, "Pokemon tab opens");
+                stage = 32;
+                ticks = 0;
+              }
+              case 32 -> {
+                shot(client, "farm-pokemon");
+                var search =
+                    (net.minecraft.client.gui.widget.TextFieldWidget) field(screen, "search");
+                search.setText("zen_garden");
+                require(
+                    ((List<?>) field(screen, "groups")).size() == 1, "search selects one habitat");
+                var farm = (FarmScreen) screen;
+                screen.mouseClicked(farm.left + 245 * farm.scale, farm.top + 85 * farm.scale, 0);
+                stage = 33;
+                ticks = 0;
+              }
+              case 33 -> {
+                if ((boolean) field(screen, "previewLoading")) return;
+                require(
+                    field(screen, "preview") != null,
+                    "Zen Garden template is linked by its embedded habitat pool");
+                shot(client, "farm-structure");
+                var farm = (FarmScreen) screen;
+                var oldModel = field(screen, "preview");
+                screen.mouseClicked(farm.left + 437 * farm.scale, farm.top + 261 * farm.scale, 0);
+                require((int) field(screen, "variant") == 1, "next structure variant selected");
+                require(
+                    field(screen, "preview") != oldModel,
+                    "previous preview cleared on variant change");
+                screen.mouseDragged(
+                    farm.left + 350 * farm.scale,
+                    farm.top + 160 * farm.scale,
+                    0,
+                    30 * farm.scale,
+                    0);
+                require((float) field(screen, "yaw") > 135, "preview rotates with drag");
+                screen.mouseScrolled(
+                    farm.left + 350 * farm.scale, farm.top + 160 * farm.scale, 0, 1);
+                require((float) field(screen, "zoom") > 1.25F, "preview zoom works");
+                stage = 34;
+                ticks = 0;
+              }
+              case 34 -> {
+                if ((boolean) field(screen, "previewLoading")) return;
+                require(field(screen, "preview") != null, "next structure variant loaded");
+                shot(client, "farm-structure-variant");
+                var farm = (FarmScreen) screen;
+                var search =
+                    (net.minecraft.client.gui.widget.TextFieldWidget) field(screen, "search");
+                search.setText("no_such_habitat_test");
+                require(
+                    ((List<?>) field(screen, "groups")).isEmpty()
+                        && field(screen, "preview") == null,
+                    "no stale preview after empty search");
+                search.setText("");
+                screen.mouseClicked(farm.left + 395 * farm.scale, farm.top + 85 * farm.scale, 0);
+                require(
+                    client.currentScreen instanceof HabitatBlocksScreen,
+                    "catalogue opens block conditions");
+                client.currentScreen.close();
+                require(client.currentScreen == screen, "block guide returns to same catalogue");
                 var selected =
                     ((List<FarmCatalog.Entry>) field(screen, "filtered"))
                         .stream()
@@ -311,6 +387,8 @@ public final class SmokeClient implements ClientModInitializer {
   }
 
   static void lookAt(MinecraftClient client, BlockPos pos) {
+    // The developer can keep using the desktop while this isolated test runs.
+    client.mouse.unlockCursor();
     var direction = net.minecraft.util.math.Vec3d.ofCenter(pos).subtract(client.player.getEyePos());
     client.player.setYaw((float) (Math.toDegrees(Math.atan2(direction.z, direction.x)) - 90));
     client.player.setPitch(

@@ -60,6 +60,7 @@ final class HabitatPhaseAudit {
 
   boolean step(MinecraftClient c) throws Exception {
     if (stage == 10) {
+      if (c.world != null) return false;
       check(
           c.world == null && HabitatMonitor.INSTANCE.entries(c).isEmpty(),
           "disconnect clears observations");
@@ -313,9 +314,14 @@ final class HabitatPhaseAudit {
         check(
             HabitatMonitor.INSTANCE.entries(c).stream().noneMatch(e -> e.pinned()),
             "dimension change does not inherit overworld pin");
-        c.world.disconnect();
-        c.disconnect(new net.minecraft.client.gui.screen.TitleScreen());
         stage++;
+        // Disconnect outside END_CLIENT_TICK: shutdown can pump another rendered frame.
+        // Clear synthetic advancement toasts before that reentrant loading screen.
+        c.send(() -> {
+          c.getToastManager().clear();
+          c.world.disconnect();
+          c.disconnect(new net.minecraft.client.gui.screen.TitleScreen());
+        });
       }
       case 11 -> {
         HabitatMonitor.INSTANCE.tick(c);

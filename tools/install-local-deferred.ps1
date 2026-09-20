@@ -67,6 +67,16 @@ try {
     $sources = @(Get-ChildItem -LiteralPath $deliveryRoot -Filter ($filePrefix + '-*-LOCAL.jar') -File)
     if ($sources.Count -ne 1) { throw 'Un seul JAR local est attendu.' }
     $source = $sources[0].FullName
+    if ((Test-Path -LiteralPath (Join-Path $LauncherRoot 'profiles')) -or
+        (Test-Path -LiteralPath (Join-Path $LauncherRoot 'mods-user')) -or
+        (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $LauncherRoot) 'user-mods-tracked.json'))) {
+        Write-Status 'waiting' 'Installation gérée préparée ; attente de la fermeture du jeu si nécessaire.'
+        $result = & (Join-Path $deliveryRoot 'InstallManagedLocalMod.ps1') -SourceJar $source -ExpectedModId $modId -LauncherRoot $LauncherRoot -PollSeconds $PollSeconds
+        $result | Write-Output
+        $outcome = $result | Select-Object -Last 1 | ConvertFrom-Json
+        Write-Status $outcome.state 'Installation gérée : copies et suivi vérifiés par l’installateur.'
+        return
+    }
     $hashFile = $source + '.sha256'
     if (-not (Test-Path -LiteralPath $hashFile -PathType Leaf)) { throw 'Empreinte SHA-256 absente.' }
     $expectedHash = ((Get-Content -LiteralPath $hashFile -Raw).Trim() -split '\s+')[0]

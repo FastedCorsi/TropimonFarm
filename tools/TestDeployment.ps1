@@ -50,4 +50,20 @@ $state=Get-Content -LiteralPath (Join-Path $delivery 'install-status.json') -Raw
 if($state.state -ne 'blocked'){throw 'Concurrent target modification was not blocked'}
 if((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -eq $hash){throw 'Changed target was overwritten'}
 Write-Output 'Deployment tests passed: install, backup, corruption and changed-target rejection.'
+$managedProfile=Join-Path $fixture 'managed-profile'
+$managedInstance=Join-Path $managedProfile 'instance'
+New-Item -ItemType Directory -Path (Join-Path $managedInstance 'mods'),(Join-Path $managedInstance 'mods-user') | Out-Null
+$tracker=Join-Path $managedProfile 'user-mods-tracked.json'
+[IO.File]::WriteAllText($tracker,'["other-disabled.jar"]')
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'InstallManagedLocalMod.ps1') -Destination $delivery
+& $script -LauncherRoot $managedInstance
+$state=Get-Content -LiteralPath (Join-Path $delivery 'install-status.json') -Raw | ConvertFrom-Json
+if($state.state -ne 'installed'){throw 'Managed fixture installation failed'}
+foreach($folder in @('mods','mods-user')) {
+ $copy=Join-Path (Join-Path $managedInstance $folder) (Split-Path $source -Leaf)
+ if((Get-FileHash -LiteralPath $copy -Algorithm SHA256).Hash -ne $hash){throw 'Managed copy differs'}
+}
+$tracked=Get-Content -LiteralPath $tracker -Raw | ConvertFrom-Json
+if(@($tracked).Count -ne 2 -or $tracked -notcontains 'other-disabled.jar' -or $tracked -notcontains (Split-Path $source -Leaf)){throw 'Managed tracking not preserved'}
+Write-Output 'Managed delivery tests passed: both copies and unrelated tracking preserved.'
 # Keep synthetic fixtures in the OS temporary directory; never publish them.
