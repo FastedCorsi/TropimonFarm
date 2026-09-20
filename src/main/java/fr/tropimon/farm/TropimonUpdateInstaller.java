@@ -295,14 +295,22 @@ public final class TropimonUpdateInstaller {
         return false;
     }
 
-    private static boolean minecraftRunningWindows(Path instance) throws IOException {
-        // ProcessHandle.arguments() is unavailable on Windows. Use the OS's read-only process query.
-        String script = "$ErrorActionPreference='Stop'; Import-Module (Join-Path $PSHOME 'Modules/CimCmdlets/CimCmdlets.psd1'); "
+    static String windowsProcessQuery() {
+        return "$ErrorActionPreference='Stop'; Import-Module (Join-Path $PSHOME 'Modules/CimCmdlets/CimCmdlets.psd1'); "
                 + "Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Utility/Microsoft.PowerShell.Utility.psd1'); "
                 + "[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); "
-                + "@(Get-CimInstance Win32_Process -Filter \"Name='java.exe' OR Name='javaw.exe'\" | Select-Object ProcessId,CommandLine) | ConvertTo-Json -Compress";
+                // CIM may keep a process that exited while the snapshot was being read.
+                // Re-query only missing command lines; a live uninspectable process still blocks.
+                + "@(Get-CimInstance Win32_Process -Filter \"Name='java.exe' OR Name='javaw.exe'\" | ForEach-Object { "
+                + "$item=$_; if ([string]::IsNullOrWhiteSpace($item.CommandLine)) { "
+                + "$item=Get-CimInstance Win32_Process -Filter ('ProcessId=' + $item.ProcessId) }; "
+                + "if ($null -ne $item) { $item | Select-Object ProcessId,CommandLine } }) | ConvertTo-Json -Compress";
+    }
+
+    private static boolean minecraftRunningWindows(Path instance) throws IOException {
+        // ProcessHandle.arguments() is unavailable on Windows. Use the OS's read-only process query.
         Path executable = Path.of(System.getenv("SystemRoot"), "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
-        String encoded = Base64.getEncoder().encodeToString(script.getBytes(java.nio.charset.StandardCharsets.UTF_16LE));
+        String encoded = Base64.getEncoder().encodeToString(windowsProcessQuery().getBytes(java.nio.charset.StandardCharsets.UTF_16LE));
         try {
             Process query = new ProcessBuilder(executable.toString(), "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-EncodedCommand", encoded)
                     .redirectError(ProcessBuilder.Redirect.DISCARD).start();
@@ -317,20 +325,25 @@ public final class TropimonUpdateInstaller {
             byte[] bytes = output.get(5, java.util.concurrent.TimeUnit.SECONDS);
             if (query.exitValue() != 0 || bytes.length > 2 * 1024 * 1024) throw new IOException("Process query unavailable");
             String json = new String(bytes, java.nio.charset.StandardCharsets.UTF_8).strip();
-            if (json.isEmpty()) return false;
-            var parsed = JsonParser.parseString(json);
-            var entries = parsed.isJsonArray() ? parsed.getAsJsonArray() : new com.google.gson.JsonArray();
-            if (parsed.isJsonObject()) entries.add(parsed);
-            for (var entry : entries) {
-                var process = entry.getAsJsonObject();
-                if (process.get("ProcessId").getAsLong() == ProcessHandle.current().pid()) continue;
-                if (!process.has("CommandLine") || process.get("CommandLine").isJsonNull()) throw new IOException("Java process cannot be inspected");
-                if (sameInstance(process.get("CommandLine").getAsString(), instance)) return true;
-            }
-            return false;
+            return windowsSnapshotRunning(json, instance);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt(); throw new IOException("Process query interrupted", interrupted);
         } catch (Exception failure) { throw new IOException("Process query failed", failure); }
+    }
+
+    static boolean windowsSnapshotRunning(String json, Path instance) throws IOException {
+        if (json.isEmpty()) return false;
+        var parsed = JsonParser.parseString(json);
+        var entries = parsed.isJsonArray() ? parsed.getAsJsonArray() : new com.google.gson.JsonArray();
+        if (parsed.isJsonObject()) entries.add(parsed);
+        for (var entry : entries) {
+            var process = entry.getAsJsonObject();
+            if (process.get("ProcessId").getAsLong() == ProcessHandle.current().pid()) continue;
+            if (!process.has("CommandLine") || process.get("CommandLine").isJsonNull()
+                    || process.get("CommandLine").getAsString().isBlank()) throw new IOException("Java process cannot be inspected");
+            if (sameInstance(process.get("CommandLine").getAsString(), instance)) return true;
+        }
+        return false;
     }
 
     static boolean sameInstance(String command, Path instance) throws IOException {
